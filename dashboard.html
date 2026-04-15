@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Hunter Dashboard</title>
+  <link rel="stylesheet" href="dashboard-styles.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <h1>📊 Job Applications Dashboard</h1>
+      <p class="subtitle">Track all your job applications in one place</p>
+    </header>
+
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-number" id="total-applications">0</div>
+        <div class="stat-label">Total Applications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="applications-this-month">0</div>
+        <div class="stat-label">This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="applications-this-week">0</div>
+        <div class="stat-label">This Week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="applications-today">0</div>
+        <div class="stat-label">Today</div>
+      </div>
+    </div>
+
+    <div class="controls-section">
+      <div class="filter-group">
+        <label for="date-filter">Filter by date:</label>
+        <select id="date-filter">
+          <option value="all">All time</option>
+          <option value="today">Today</option>
+          <option value="week">This week</option>
+          <option value="month">This month</option>
+          <option value="custom">Custom range</option>
+        </select>
+      </div>
+
+      <div class="filter-group" id="custom-date-picker" style="display: none;">
+        <label for="start-date">From:</label>
+        <input type="date" id="start-date" />
+        <label for="end-date">To:</label>
+        <input type="date" id="end-date" />
+        <button id="apply-filter">Apply</button>
+      </div>
+
+      <div class="action-buttons">
+        <button id="export-csv" class="btn-primary">📥 Export to CSV</button>
+        <button id="upload-eml" class="btn-secondary">📧 Import from Email</button>
+        <button id="clear-all" class="btn-danger">🗑️ Clear All</button>
+      </div>
+    </div>
+
+    <div class="applications-section">
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Search by job title or URL..." 
+        />
+      </div>
+
+      <div id="applications-list" class="applications-list">
+        <div class="empty-state">
+          <p>No applications recorded yet. Start applying to jobs!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Upload Modal -->
+  <div id="upload-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Import Applications from Email</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-section">
+          <div id="drop-zone" class="drop-zone">
+            <div class="drop-zone-content">
+              <p>📧 Drag and drop .eml files here</p>
+              <p class="drop-zone-small">or</p>
+              <input type="file" id="file-input" accept=".eml" multiple style="display: none;" />
+              <button id="file-select-btn" class="btn-primary">Select Files</button>
+            </div>
+          </div>
+          <div id="upload-status" class="upload-status" style="display: none;"></div>
+        </div>
+
+        <div id="extracted-applications" class="extracted-applications" style="display: none;">
+          <h3>Extracted Applications</h3>
+          <div id="extracted-list"></div>
+          <div class="modal-actions">
+            <button id="import-extracted" class="btn-primary">✓ Import All</button>
+            <button id="cancel-import" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="eml-parser.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

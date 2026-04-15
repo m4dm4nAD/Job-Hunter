@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Job Application Page</title>
+</head>
+<body>
+    <h1>Software Engineer Position</h1>
+    <p>Apply for this exciting software engineering role!</p>
+
+    <form id="job-application">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name"><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="your.email@example.com"><br><br>
+
+        <label for="resume">Resume:</label>
+        <input type="file" id="resume" name="resume"><br><br>
+
+        <label for="cover-letter">Cover Letter:</label>
+        <textarea id="cover-letter" name="cover-letter" placeholder="Tell us why you're interested..."></textarea><br><br>
+
+        <button type="submit" id="submit-application">Submit Application</button>
+        <button type="button" id="apply-now">Apply Now</button>
+    </form>
+
+    <script>
+        document.getElementById('job-application').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Application submitted!');
+        });
+
+        document.getElementById('apply-now').addEventListener('click', function() {
+            alert('Apply now clicked!');
+        });
+    </script>
+</body>
+</html>
