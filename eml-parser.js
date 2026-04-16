@@ -4,33 +4,70 @@
 
 class EMLParser {
   static parseEML(fileContent) {
+    // More flexible EML parsing that handles various formats
     const lines = fileContent.split('\n');
     const headers = {};
     let bodyStartIndex = 0;
+    let inBody = false;
 
-    // Parse headers
+    // Parse headers - handle multi-line headers and various formats
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      if (line.trim() === '') {
-        bodyStartIndex = i + 1;
-        break;
+
+      // Check for body start (blank line or common body markers)
+      if (!inBody && (line.trim() === '' || line.startsWith('Content-Type:') || line.startsWith('Content-Transfer-Encoding:'))) {
+        // Look ahead to see if this is actually the start of body
+        let nextNonEmpty = i + 1;
+        while (nextNonEmpty < lines.length && lines[nextNonEmpty].trim() === '') {
+          nextNonEmpty++;
+        }
+
+        if (nextNonEmpty >= lines.length || !lines[nextNonEmpty].includes(':')) {
+          bodyStartIndex = i;
+          inBody = true;
+          break;
+        }
       }
-      const colonIndex = line.indexOf(':');
-      if (colonIndex > -1) {
-        const key = line.substring(0, colonIndex).trim();
-        const value = line.substring(colonIndex + 1).trim();
-        headers[key.toLowerCase()] = value;
+
+      // Parse header line
+      if (!inBody) {
+        const colonIndex = line.indexOf(':');
+        if (colonIndex > -1) {
+          const key = line.substring(0, colonIndex).trim();
+          let value = line.substring(colonIndex + 1).trim();
+
+          // Handle multi-line headers (continuation lines start with whitespace)
+          let j = i + 1;
+          while (j < lines.length && (lines[j].startsWith(' ') || lines[j].startsWith('\t'))) {
+            value += ' ' + lines[j].trim();
+            j++;
+          }
+          i = j - 1; // Skip the continuation lines we just processed
+
+          headers[key.toLowerCase()] = value;
+        }
       }
     }
 
-    // Get body
-    const body = lines.slice(bodyStartIndex).join('\n');
+    // If we didn't find a clear body start, assume everything after headers is body
+    if (!inBody) {
+      bodyStartIndex = 0;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].trim() === '') {
+          bodyStartIndex = i + 1;
+          break;
+        }
+      }
+    }
+
+    // Get body - everything after the headers
+    const body = lines.slice(bodyStartIndex).join('\n').trim();
 
     return {
-      subject: headers.subject || '',
-      from: headers.from || '',
-      to: headers.to || '',
-      date: headers.date || '',
+      subject: headers.subject || headers['subject'] || '',
+      from: headers.from || headers['from'] || '',
+      to: headers.to || headers['to'] || '',
+      date: headers.date || headers['date'] || '',
       body: body,
       headers: headers
     };
@@ -59,28 +96,38 @@ class EMLParser {
   }
 
   static extractCompany(combined, subject, body) {
-    // Common company announcement patterns
+    // More flexible company extraction patterns
     const patterns = [
-      /(?:from|at|company)\s*[:=]?\s*([A-Z][a-zA-Z0-9\s&.-]+?)(?:\.|,|$)/i,
-      /(?:opportunity at|job at|position at)\s+([A-Z][a-zA-Z0-9\s&.-]+?)(?:\.|,|$)/i,
-      /([A-Z][a-zA-Z0-9\s&.-]+?)\s+(?:is hiring|job opening|application)/i,
-      /(?:congratulations|thank you)\s+(?:at|for applying to|for your application to)\s+([A-Z][a-zA-Z0-9\s&.-]+?)(?:\.|,|$)/i,
-      /company\s*:\s*([A-Z][a-zA-Z0-9\s&.-]+?)(?:\n|;|$)/i,
-      /(?:employer|company name)\s*:\s*([A-Z][a-zA-Z0-9\s&.-]+?)(?:\n|;|$)/i
+      // Direct company mentions
+      /(?:company|employer|organization)\s*[:=]?\s*([A-Z][a-zA-Z0-9\s&.-]+?)(?:\n|;|$)/i,
+      /(?:at|from|with)\s+([A-Z][a-zA-Z0-9\s&.-]+?)\s+(?:we|our|team|company)/i,
+      /([A-Z][a-zA-Z0-9\s&.-]+?)\s+(?:is hiring|job opening|position|role)/i,
+
+      // Job announcement patterns
+      /(?:congratulations|thank you)\s+(?:at|for applying to|for your application to)\s+([A-Z][a-zA-Z0-9\s&.-]+?)(?:\n|,|\.|$)/i,
+      /(?:opportunity|position)\s+(?:at|with)\s+([A-Z][a-zA-Z0-9\s&.-]+?)(?:\n|,|\.|$)/i,
+
+      // Email domain extraction
+      /(?:from|sender)\s*:\s*[^@]+@([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/i
     ];
 
+    // Try patterns on combined text
     for (const pattern of patterns) {
-      const match = combined.match(pattern) || subject.match(pattern);
+      const match = combined.match(pattern);
       if (match && match[1]) {
-        const company = match[1].trim().replace(/\s+/g, ' ');
+        let company = match[1].trim().replace(/\s+/g, ' ');
         if (company.length > 2 && company.length < 100) {
-          return company;
+          // Clean up common artifacts
+          company = company.replace(/^(position|role|job|title)/i, '').trim();
+          if (company.length > 2) {
+            return this.formatCompanyName(company);
+          }
         }
       }
     }
 
-    // Try to extract from sender domain
-    const fromMatch = body.match(/from:\s*([^\n<]+)/i);
+    // Try to extract from sender domain as fallback
+    const fromMatch = body.match(/from:\s*([^\n<]+)/i) || subject.match(/from:\s*([^\n<]+)/i);
     if (fromMatch) {
       const from = fromMatch[1];
       const emailMatch = from.match(/@([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/);
@@ -92,26 +139,40 @@ class EMLParser {
       }
     }
 
+    // Last resort: look for capitalized words that might be company names
+    const capitalizedWords = combined.match(/\b[A-Z][a-zA-Z]{2,}\b/g);
+    if (capitalizedWords) {
+      for (const word of capitalizedWords.slice(0, 5)) {
+        if (word.length > 3 && word.length < 30 && !this.isCommonWord(word.toLowerCase())) {
+          return word;
+        }
+      }
+    }
+
     return '';
   }
 
   static extractJobTitle(combined, subject, body) {
-    // Job title patterns
+    // More flexible job title patterns
     const patterns = [
-      /(?:position|title|role)\s*[:=]?\s*([^\n.,;]+?)(?:[,;\n]|$)/i,
-      /apply.*?(?:to|for)\s+(?:the\s+)?([^\n.,]+?)\s+(?:position|role|job)/i,
-      /([A-Z][a-zA-Z0-9\s]*?(?:Engineer|Developer|Manager|Designer|Analyst|Consultant|Specialist|Coordinator|Associate|Officer|Architect|Lead|Senior|Junior)[a-zA-Z0-9\s]*?)(?:\n|,|$)/,
-      /job title\s*:\s*([^\n;]+?)(?:\n|;|$)/i,
-      /^.*?position.*?:\s*([^\n.,;]+?)(?:[,;\n]|$)/im,
-      /congratulations.*?(?:for your application for the )?([^\n.,]+?)\s+(?:position|role|job)/i
+      // Direct title mentions
+      /(?:position|title|role|job)\s*[:=]?\s*([^\n.,;]+?)(?:[,;\n]|$)/i,
+      /(?:apply.*?(?:to|for)|applying for)\s+(?:the\s+)?([^\n.,;]+?)\s+(?:position|role|job)/i,
+      /(?:congratulations.*?(?:for your application for the|on your application for))\s*([^\n.,;]+?)(?:\n|,|\.|$)/i,
+
+      // Common job title patterns
+      /\b(?:senior|junior|lead|principal|staff|associate)\s+(?:software|frontend|backend|full.?stack|web|mobile|devops|data|product|ui|ux|qa|test)\s+(?:engineer|developer|designer|analyst|manager|architect)\b/i,
+      /\b(?:software|frontend|backend|full.?stack|web|mobile|devops|data|product|ui|ux|qa|test)\s+(?:engineer|developer|designer|analyst|manager|architect|specialist|consultant)\b/i,
+      /\b(?:product|project|program|technical|engineering|design|marketing|sales|business|operations)\s+(?:manager|director|lead|specialist|analyst|coordinator)\b/i
     ];
 
+    // Try patterns
     for (const pattern of patterns) {
-      const match = combined.match(pattern) || subject.match(pattern);
+      const match = combined.match(pattern);
       if (match && match[1]) {
         let title = match[1].trim().replace(/\s+/g, ' ');
         if (title.length > 2 && title.length < 150) {
-          // Remove common noise
+          // Remove common prefixes that might have been captured
           title = title.replace(/^(position|role|job|title)/i, '').trim();
           if (title.length > 2) {
             return title;
@@ -120,7 +181,18 @@ class EMLParser {
       }
     }
 
+    // Fallback: look for job titles in subject line
+    const subjectTitles = subject.match(/\b(?:senior|junior|lead|principal|staff|associate)?\s*(?:software|frontend|backend|full.?stack|web|mobile|devops|data|product|ui|ux|qa|test|product|project|program|technical|engineering|design|marketing|sales|business|operations)\s+(?:engineer|developer|designer|analyst|manager|director|architect|specialist|consultant|coordinator)\b/i);
+    if (subjectTitles) {
+      return subjectTitles[0];
+    }
+
     return '';
+  }
+
+  static isCommonWord(word) {
+    const commonWords = ['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'day', 'get', 'has', 'him', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'two', 'who', 'boy', 'did', 'has', 'let', 'put', 'say', 'she', 'too', 'use'];
+    return commonWords.includes(word);
   }
 
   static extractDate(dateString) {

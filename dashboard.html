@@ -59,18 +59,40 @@
       </div>
     </div>
 
-    <div class="applications-section">
-      <div class="search-box">
-        <input 
-          type="text" 
-          id="search-input" 
-          placeholder="Search by job title or URL..." 
-        />
+    <!-- Tab Navigation -->
+    <div class="tabs-section">
+      <div class="tab-buttons">
+        <button id="tab-opened" class="tab-button active">👁️ Opened Job Ads</button>
+        <button id="tab-submitted" class="tab-button">✅ Submitted Applications</button>
       </div>
-
-      <div id="applications-list" class="applications-list">
-        <div class="empty-state">
-          <p>No applications recorded yet. Start applying to jobs!</p>
+      <div class="tab-content">
+        <div id="tab-opened-content" class="tab-pane active">
+          <div class="search-box">
+            <input 
+              type="text" 
+              id="search-input-opened" 
+              placeholder="Search by job title or URL..." 
+            />
+          </div>
+          <div id="applications-list-opened" class="applications-list">
+            <div class="empty-state">
+              <p>No opened job ads detected yet.</p>
+            </div>
+          </div>
+        </div>
+        <div id="tab-submitted-content" class="tab-pane">
+          <div class="search-box">
+            <input 
+              type="text" 
+              id="search-input-submitted" 
+              placeholder="Search by job title or URL..." 
+            />
+          </div>
+          <div id="applications-list-submitted" class="applications-list">
+            <div class="empty-state">
+              <p>No submitted applications recorded yet. Start applying to jobs!</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
