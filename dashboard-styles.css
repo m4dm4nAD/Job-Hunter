@@ -412,6 +412,140 @@ body {
   overflow-y: auto;
 }
 
+.analytics-section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 40px;
+  box-shadow: var(--shadow);
+}
+
+.analytics-header {
+  margin-bottom: 20px;
+}
+
+.analytics-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.analytics-subtitle {
+  color: var(--text-secondary);
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
+.analytics-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.analytics-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.analytics-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.analytics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.analytics-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.analytics-list li:last-child {
+  border-bottom: none;
+}
+
+.company-name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.company-count {
+  color: var(--text-secondary);
+}
+
+.breakdown-list {
+  display: grid;
+  gap: 12px;
+}
+
+.breakdown-item {
+  display: grid;
+  gap: 6px;
+}
+
+.breakdown-label {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.breakdown-bar {
+  height: 10px;
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+.trend-chart {
+  display: grid;
+  gap: 10px;
+}
+
+.trend-row {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) 30px;
+  gap: 12px;
+  align-items: center;
+}
+
+.trend-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.trend-bar-wrapper {
+  height: 12px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.trend-bar-fill {
+  height: 100%;
+  background: var(--primary);
+}
+
+.trend-count {
+  text-align: right;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.empty-analytics {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;

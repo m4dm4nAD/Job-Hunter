@@ -122,7 +122,7 @@ function displayApplications(applications, targetList = applicationsListSubmitte
     const emptyMessage = currentTab === 'submitted'
       ? 'No submitted applications found matching your filters.'
       : 'No opened job ads detected.';
-    applicationsList.innerHTML = `
+    targetList.innerHTML = `
       <div class="empty-state">
         <p>${emptyMessage}</p>
       </div>
@@ -130,7 +130,7 @@ function displayApplications(applications, targetList = applicationsListSubmitte
     return;
   }
 
-  applicationsList.innerHTML = '';
+  targetList.innerHTML = '';
   applications.forEach((app, index) => {
     // Handle different data structures for submitted vs opened applications
     const timestamp = app.timestamp || app.detectedAt;
@@ -197,7 +197,7 @@ function displayApplications(applications, targetList = applicationsListSubmitte
       </div>
     `;
 
-    applicationsList.appendChild(appCard);
+    targetList.appendChild(appCard);
   });
 
   // Add event listeners for copy and delete buttons
@@ -246,6 +246,136 @@ function updateStats() {
   document.getElementById('applications-today').textContent = todayCount;
   document.getElementById('applications-this-week').textContent = weekCount;
   document.getElementById('applications-this-month').textContent = monthCount;
+  updateAnalytics();
+}
+
+function updateAnalytics() {
+  const data = allApplications;
+  const companies = getTopCompanies(data, 5);
+  const breakdown = getEventTypeBreakdown(data);
+  const weeklyTrend = getWeeklyTrend(data);
+
+  renderTopCompanies(companies);
+  renderEventBreakdown(breakdown);
+  renderTrendChart(weeklyTrend);
+}
+
+function getTopCompanies(data, limit = 5) {
+  const counts = data.reduce((acc, app) => {
+    const company = app.company ? app.company.trim() : 'Unknown';
+    acc[company] = (acc[company] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([company, count]) => ({ company, count }));
+}
+
+function getEventTypeBreakdown(data) {
+  const breakdown = {
+    'Form Submitted': 0,
+    'Button Clicked': 0,
+    'Email Import': 0,
+    'Unknown': 0
+  };
+
+  data.forEach(app => {
+    if (app.eventType === 'form-submit') {
+      breakdown['Form Submitted'] += 1;
+    } else if (app.eventType === 'button-click') {
+      breakdown['Button Clicked'] += 1;
+    } else if (app.eventType === 'email-import') {
+      breakdown['Email Import'] += 1;
+    } else {
+      breakdown['Unknown'] += 1;
+    }
+  });
+
+  return breakdown;
+}
+
+function getWeeklyTrend(data) {
+  const trend = [];
+  const today = new Date();
+
+  for (let i = 6; i >= 0; i -= 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() - i);
+    const label = day.toLocaleDateString(undefined, { weekday: 'short' });
+    const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+
+    const count = data.filter(app => {
+      const appDate = new Date(app.timestamp || app.detectedAt);
+      return appDate >= start && appDate < end;
+    }).length;
+
+    trend.push({ label, count });
+  }
+
+  return trend;
+}
+
+function renderTopCompanies(companies) {
+  const list = document.getElementById('top-companies-list');
+
+  if (companies.length === 0) {
+    list.innerHTML = '<li>No submitted applications yet.</li>';
+    return;
+  }
+
+  list.innerHTML = companies.map(({ company, count }) => `
+    <li>
+      <span class="company-name">${escapeHtml(company)}</span>
+      <span class="company-count">${count}</span>
+    </li>
+  `).join('');
+}
+
+function renderEventBreakdown(breakdown) {
+  const container = document.getElementById('event-breakdown');
+  const total = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
+
+  if (total === 0) {
+    container.innerHTML = '<p class="empty-analytics">No submitted applications yet.</p>';
+    return;
+  }
+
+  container.innerHTML = Object.entries(breakdown).map(([label, count]) => {
+    const width = total > 0 ? Math.round((count / total) * 100) : 0;
+    return `
+      <div class="breakdown-item">
+        <div class="breakdown-label">
+          <span>${escapeHtml(label)}</span>
+          <span>${count}</span>
+        </div>
+        <div class="breakdown-bar" style="width:${width}%"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTrendChart(trend) {
+  const container = document.getElementById('trend-chart');
+  const maxValue = Math.max(1, ...trend.map(item => item.count));
+
+  if (trend.every(item => item.count === 0)) {
+    container.innerHTML = '<p class="empty-analytics">No submissions in the last 7 days.</p>';
+    return;
+  }
+
+  container.innerHTML = trend.map(item => `
+    <div class="trend-row">
+      <span class="trend-label">${escapeHtml(item.label)}</span>
+      <div class="trend-bar-wrapper">
+        <div class="trend-bar-fill" style="width:${(item.count / maxValue) * 100}%"></div>
+      </div>
+      <span class="trend-count">${item.count}</span>
+    </div>
+  `).join('');
 }
 
 function filterAndDisplay(filterType) {
