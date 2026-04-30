@@ -100,11 +100,9 @@ document.getElementById('upload-eml').addEventListener('click', () => {
 document.getElementById('clear-all').addEventListener('click', clearAllApplications);
 
 function loadAllData() {
-  chrome.storage.local.get(['jobApplications', 'applicationInProgress'], (result) => {
+  chrome.storage.local.get(['jobApplications', 'openedJobAds'], (result) => {
     allApplications = Array.isArray(result.jobApplications) ? result.jobApplications : [];
-    openedJobAds = result.applicationInProgress ? [result.applicationInProgress] : [];
-    console.log('Loaded applications:', allApplications);
-    console.log('Loaded opened job ads:', openedJobAds);
+    openedJobAds = Array.isArray(result.openedJobAds) ? result.openedJobAds : [];
     displayCurrentTab();
   });
 }
@@ -420,7 +418,7 @@ function deleteApplication(index) {
       });
     } else {
       openedJobAds.splice(index, 1);
-      chrome.storage.local.remove('applicationInProgress', () => {
+      chrome.storage.local.set({openedJobAds}, () => {
         displayApplications(openedJobAds, applicationsListOpened);
         updateStats();
       });
@@ -442,7 +440,7 @@ function clearAllApplications() {
       });
     } else {
       openedJobAds = [];
-      chrome.storage.local.remove('applicationInProgress', () => {
+      chrome.storage.local.set({openedJobAds: []}, () => {
         displayApplications(openedJobAds, applicationsListOpened);
         updateStats();
       });
@@ -577,36 +575,48 @@ function handleFiles(files) {
 }
 
 function processEMLFiles(files) {
-  const extractedApplications = [];
+  const extracted = [];
+  let processed = 0;
 
-  files.forEach((file, index) => {
+  const onDone = () => {
+    if (processed === files.length) displayExtractedApplications(extracted);
+  };
+
+  files.forEach((file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const emlContent = e.target.result;
-        const parsedEmail = EMLParser.parseEML(emlContent);
-        
-        if (parsedEmail && parsedEmail.title && parsedEmail.company) {
-          extractedApplications.push({
-            title: parsedEmail.title,
-            company: parsedEmail.company,
-            url: parsedEmail.url || '',
-            timestamp: Date.now(),
-            eventType: 'email-import'
-          });
-        }
-
-        // Check if all files are processed
-        if (extractedApplications.length + (files.length - index - 1) === files.length) {
-          displayExtractedApplications(extractedApplications);
-        }
-      } catch (error) {
-        console.error('Error parsing EML file:', error);
-        // Continue with other files
-        if (index === files.length - 1) {
-          displayExtractedApplications(extractedApplications);
-        }
+        const parsed = EMLParser.parseEML(e.target.result);
+        const info = EMLParser.extractJobInfo(parsed);
+        extracted.push({
+          file: file.name,
+          title: info.title || '',
+          company: info.company || '',
+          url: '',
+          timestamp: info.date || new Date().toISOString(),
+          eventType: 'email-import',
+          confidence: info.confidence
+        });
+      } catch (err) {
+        console.error('Error parsing EML file:', file.name, err);
+        extracted.push({
+          file: file.name,
+          title: '',
+          company: '',
+          url: '',
+          timestamp: new Date().toISOString(),
+          eventType: 'email-import',
+          confidence: { company: 'manual-required', title: 'manual-required' },
+          error: String(err && err.message || err)
+        });
+      } finally {
+        processed++;
+        onDone();
       }
+    };
+    reader.onerror = () => {
+      processed++;
+      onDone();
     };
     reader.readAsText(file);
   });
@@ -621,52 +631,86 @@ function displayExtractedApplications(applications) {
   extractedDiv.style.display = 'block';
 
   if (applications.length === 0) {
-    extractedList.innerHTML = '<p>No valid job applications found in the email files.</p>';
+    extractedList.innerHTML = '<p>No emails were processed.</p>';
     document.getElementById('import-extracted').disabled = true;
     return;
   }
 
   extractedList.innerHTML = '';
   applications.forEach((app, index) => {
-    const appDiv = document.createElement('div');
-    appDiv.className = 'extracted-app-item';
-    appDiv.innerHTML = `
-      <div class="app-info">
-        <strong>${escapeHtml(app.title)}</strong> at ${escapeHtml(app.company)}
-        ${app.url ? `<br><small>${escapeHtml(app.url)}</small>` : ''}
+    const item = document.createElement('div');
+    item.className = 'extracted-app-item';
+    item.innerHTML = `
+      <div class="extracted-header">
+        <h4>📧 ${escapeHtml(app.file || 'email')}</h4>
+        <button class="btn-small btn-remove" data-index="${index}">Remove</button>
       </div>
-      <div class="app-actions">
-        <button class="btn-small" onclick="removeExtractedApp(${index})">Remove</button>
+      <div class="extracted-form">
+        <div class="form-group">
+          <label>Company:</label>
+          <input type="text" class="company-input" data-index="${index}"
+                 value="${escapeHtml(app.company)}"
+                 placeholder="Enter company name" />
+        </div>
+        <div class="form-group">
+          <label>Job Title:</label>
+          <input type="text" class="title-input" data-index="${index}"
+                 value="${escapeHtml(app.title)}"
+                 placeholder="Enter job title" />
+        </div>
+        <div class="form-group">
+          <label>Date:</label>
+          <span>${escapeHtml(new Date(app.timestamp).toLocaleString())}</span>
+        </div>
+        ${app.error ? `<div class="form-group error-msg">⚠️ ${escapeHtml(app.error)}</div>` : ''}
       </div>
     `;
-    extractedList.appendChild(appDiv);
+    extractedList.appendChild(item);
   });
 
-  // Store applications for import
+  extractedList.querySelectorAll('.company-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const i = parseInt(e.target.dataset.index, 10);
+      applications[i].company = e.target.value;
+    });
+  });
+  extractedList.querySelectorAll('.title-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const i = parseInt(e.target.dataset.index, 10);
+      applications[i].title = e.target.value;
+    });
+  });
+  extractedList.querySelectorAll('.btn-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const i = parseInt(e.currentTarget.dataset.index, 10);
+      applications.splice(i, 1);
+      displayExtractedApplications(applications);
+    });
+  });
+
   window.extractedApplications = applications;
   document.getElementById('import-extracted').disabled = false;
 }
 
-function removeExtractedApp(index) {
-  window.extractedApplications.splice(index, 1);
-  displayExtractedApplications(window.extractedApplications);
-}
-
 function importExtractedApplications() {
-  if (!window.extractedApplications || window.extractedApplications.length === 0) {
-    return;
-  }
+  if (!window.extractedApplications || window.extractedApplications.length === 0) return;
 
-  // Add to existing applications
-  allApplications = allApplications.concat(window.extractedApplications);
-  
-  // Save to storage
+  const toAdd = window.extractedApplications.map(app => ({
+    title: (app.title || '').trim() || 'Untitled Position',
+    company: (app.company || '').trim() || null,
+    url: app.url || '',
+    timestamp: app.timestamp || new Date().toISOString(),
+    eventType: 'email-import'
+  }));
+
+  allApplications = toAdd.concat(allApplications);
+
   chrome.storage.local.set({jobApplications: allApplications}, () => {
     document.getElementById('upload-modal').style.display = 'none';
     resetUploadModal();
     displayApplications(allApplications, applicationsListSubmitted);
     updateStats();
-    alert(`Successfully imported ${window.extractedApplications.length} application(s) from email!`);
+    alert(`Imported ${toAdd.length} application(s) from email.`);
   });
 }
 
