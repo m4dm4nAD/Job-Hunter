@@ -3,7 +3,7 @@ const historyEl = document.getElementById('history');
 const openedHistoryEl = document.getElementById('opened-history');
 const clearButton = document.getElementById('clear-history');
 
-const MAX_VISIBLE = 10;
+const MAX_VISIBLE = 5;
 
 function formatTimestamp(isoString) {
   return new Date(isoString).toLocaleString();

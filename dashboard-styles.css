@@ -1,10 +1,3 @@
-/* =============================================================================
-   Job Hunter — dashboard styles
-   Aesthetic: brutalist terminal HUD. Mono throughout. Near-black ground,
-   acid-lime primary, magenta destructive, amber alert, cyan informational.
-   No rounding. Hard borders. Tabular nums. Subtle scan grid.
-   ============================================================================= */
-
 :root {
   --void:       #0b0d0c;
   --void-deep:  #050605;

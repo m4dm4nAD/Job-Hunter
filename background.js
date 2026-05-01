@@ -1,4 +1,4 @@
-const MAX_OPENED_JOB_ADS = 500;
+const MAX_OPENED_JOB_ADS = 100; //hopeully you won't be keeping more than 100 open tabs with job ads :D
 
 function migrateLegacyOpenedJobAd() {
   chrome.storage.local.get(['applicationInProgress', 'openedJobAds'], (result) => {

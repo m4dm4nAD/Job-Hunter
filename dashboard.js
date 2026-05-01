@@ -574,6 +574,7 @@ function handleFiles(files) {
   processEMLFiles(emlFiles);
 }
 
+//some of the email parsing isn't work perfectly, trying to figure out why it's not picking up the job titles
 function processEMLFiles(files) {
   const extracted = [];
   let processed = 0;
@@ -714,8 +715,8 @@ function importExtractedApplications() {
   });
 }
 
-// Refresh applications every 5 seconds
+// Refresh applications every 2 seconds
 setInterval(() => {
   loadAllData();
   updateStats();
-}, 5000);
+}, 2000);

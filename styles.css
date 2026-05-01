@@ -1,10 +1,3 @@
-/* =============================================================================
-   Job Hunter — popup styles
-   Aesthetic: brutalist terminal HUD. Mono everywhere, near-black bg, single
-   acid-lime accent. No rounded corners. No shadows. No transitions other than
-   instant color flips on hover.
-   ============================================================================= */
-
 :root {
   --void:      #0b0d0c;
   --void-deep: #050605;
