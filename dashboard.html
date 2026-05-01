@@ -9,7 +9,7 @@
 <body>
   <div class="dashboard-container">
     <header class="dashboard-header">
-      <h1>📊 Job Applications Dashboard</h1>
+      <h1>Job Applications</h1>
       <p class="subtitle">Track all your job applications in one place</p>
     </header>
 
@@ -34,7 +34,7 @@
 
     <div class="analytics-section">
       <div class="analytics-header">
-        <h2>📈 Analytics</h2>
+        <h2>Analytics</h2>
         <p class="analytics-subtitle">Track submission trends, top companies, and application source breakdown.</p>
       </div>
       <div class="analytics-grid">
@@ -80,17 +80,17 @@
       </div>
 
       <div class="action-buttons">
-        <button id="export-csv" class="btn-primary">📥 Export to CSV</button>
-        <button id="upload-eml" class="btn-secondary">📧 Import from Email</button>
-        <button id="clear-all" class="btn-danger">🗑️ Clear All</button>
+        <button id="export-csv" class="btn-primary">Export CSV</button>
+        <button id="upload-eml" class="btn-secondary">Import Email</button>
+        <button id="clear-all" class="btn-danger">Clear All</button>
       </div>
     </div>
 
     <!-- Tab Navigation -->
     <div class="tabs-section">
       <div class="tab-buttons">
-        <button id="tab-opened" class="tab-button active">👁️ Opened Job Ads</button>
-        <button id="tab-submitted" class="tab-button">✅ Submitted Applications</button>
+        <button id="tab-opened" class="tab-button active">Opened Job Ads</button>
+        <button id="tab-submitted" class="tab-button">Submitted Applications</button>
       </div>
       <div class="tab-content">
         <div id="tab-opened-content" class="tab-pane active">
@@ -136,7 +136,7 @@
         <div class="upload-section">
           <div id="drop-zone" class="drop-zone">
             <div class="drop-zone-content">
-              <p>📧 Drag and drop .eml files here</p>
+              <p>Drag and drop .eml files here</p>
               <p class="drop-zone-small">or</p>
               <input type="file" id="file-input" accept=".eml" multiple style="display: none;" />
               <button id="file-select-btn" class="btn-primary">Select Files</button>
@@ -149,7 +149,7 @@
           <h3>Extracted Applications</h3>
           <div id="extracted-list"></div>
           <div class="modal-actions">
-            <button id="import-extracted" class="btn-primary">✓ Import All</button>
+            <button id="import-extracted" class="btn-primary">Import All</button>
             <button id="cancel-import" class="btn-secondary">Cancel</button>
           </div>
         </div>

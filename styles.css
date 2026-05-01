@@ -1,127 +1,334 @@
+/* =============================================================================
+   Job Hunter — popup styles
+   Aesthetic: brutalist terminal HUD. Mono everywhere, near-black bg, single
+   acid-lime accent. No rounded corners. No shadows. No transitions other than
+   instant color flips on hover.
+   ============================================================================= */
+
 :root {
-  color-scheme: light;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f7f8fc;
-  color: #1e2430;
+  --void:      #0b0d0c;
+  --void-deep: #050605;
+  --ash:       #15181a;
+  --ash-up:    #1d2123;
+  --steel:     #2c3133;
+  --bone:      #d8d6d0;
+  --bone-dim:  #8a8b86;
+  --bone-faint:#5a5c58;
+
+  --lime:      #7fff5e;
+  --lime-dim:  #4ed832;
+  --magenta:   #ff2d8a;
+  --amber:     #ffb000;
+  --cyan:      #5ee0ff;
+
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+
+  color-scheme: dark;
 }
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   padding: 0;
-  min-width: 320px;
+  min-width: 380px;
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle scan grid — 1px dots on 16px grid, near-invisible but adds texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(127, 255, 94, 0.04) 1px, transparent 1px);
+  background-size: 16px 16px;
+  z-index: 0;
 }
 
 .container {
-  padding: 16px;
+  position: relative;
+  z-index: 1;
+  padding: 14px 16px 16px;
+}
+
+/* ---------- Header ---------- */
+
+header {
+  border-bottom: 1px solid var(--steel);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  position: relative;
 }
 
 header h1 {
-  margin: 0 0 8px;
-  font-size: 1.15rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  margin: 0;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+header h1::before {
+  content: '> ';
+  color: var(--lime);
 }
 
 header p {
-  margin: 0 0 16px;
-  color: #525f7f;
-  font-size: 0.95rem;
+  margin: 6px 0 0;
+  color: var(--bone-faint);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-section {
-  margin-bottom: 18px;
+header::after {
+  content: 'v1.1';
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 10px;
+  color: var(--lime-dim);
+  letter-spacing: 0.1em;
 }
+
+/* ---------- Sections ---------- */
+
+section { margin-bottom: 16px; }
+section:last-of-type { margin-bottom: 0; }
 
 section h2 {
-  margin: 0 0 10px;
-  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: var(--lime);
+  padding-bottom: 4px;
+  position: relative;
 }
 
-#status {
-  padding: 10px;
-  background: #ffffff;
-  border: 1px solid #dfe3ea;
-  border-radius: 10px;
-  font-size: 0.95rem;
+section h2::before {
+  content: '── ';
+  color: var(--steel);
 }
+
+section h2::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: repeating-linear-gradient(
+    to right,
+    var(--steel) 0,
+    var(--steel) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* ---------- Status block ---------- */
+
+#status {
+  font-size: 11px;
+  color: var(--bone);
+  padding: 10px 12px;
+  background: var(--ash);
+  border-left: 2px solid var(--lime);
+  border-top: 1px solid var(--steel);
+  border-right: 1px solid var(--steel);
+  border-bottom: 1px solid var(--steel);
+  line-height: 1.5;
+  position: relative;
+}
+
+#status::before {
+  content: '● ';
+  color: var(--lime);
+  font-size: 10px;
+}
+
+/* ---------- History lists (opened + submitted) ---------- */
 
 #history,
 #opened-history {
-  display: grid;
-  gap: 10px;
+  display: block;
+  border-top: 1px solid var(--steel);
 }
 
 .history-item {
-  padding: 12px;
-  background: #ffffff;
-  border: 1px solid #dfe3ea;
-  border-radius: 10px;
+  padding: 8px 0 8px 18px;
+  border-bottom: 1px solid var(--steel);
+  position: relative;
+}
+
+.history-item::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  color: var(--lime-dim);
+  font-weight: 700;
 }
 
 .history-item .job-title {
   font-weight: 600;
-  margin-bottom: 6px;
+  font-size: 12px;
+  margin-bottom: 3px;
+  line-height: 1.35;
+  color: var(--bone);
+  letter-spacing: 0.01em;
 }
 
 .history-item .job-meta {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.85rem;
-  color: #5f6f8d;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--bone-faint);
+  margin-bottom: 3px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.history-item .job-meta span:nth-child(2) {
+  color: var(--amber);
 }
 
 .history-item .job-url a {
-  color: #2563eb;
+  font-size: 10px;
+  color: var(--cyan);
   text-decoration: none;
+  letter-spacing: 0.02em;
 }
 
+.history-item .job-url a::before { content: '['; color: var(--steel); }
+.history-item .job-url a::after  { content: ']'; color: var(--steel); }
+
+.history-item .job-url a:hover {
+  color: var(--lime);
+  text-decoration: underline;
+}
+
+/* ---------- Buttons ---------- */
+
 button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border: 1px solid var(--lime);
+  border-radius: 0;
+  background: var(--void);
+  color: var(--lime);
   cursor: pointer;
-  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: none;
 }
 
 button:hover {
-  background: #1f4db1;
+  background: var(--lime);
+  color: var(--void);
+}
+
+button:active {
+  background: var(--lime-dim);
+  border-color: var(--lime-dim);
+  color: var(--void);
 }
 
 .footer-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--steel);
 }
 
 .btn-dashboard {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px;
-  border: none;
-  border-radius: 10px;
-  background: #10b981;
-  color: white;
+  padding: 7px 12px;
+  border: 1px solid var(--bone);
+  border-radius: 0;
+  background: var(--void);
+  color: var(--bone);
   text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.95rem;
-  flex: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: none;
 }
+
+.btn-dashboard::before { content: '→ '; color: var(--lime); }
 
 .btn-dashboard:hover {
-  background: #059669;
+  background: var(--bone);
+  color: var(--void);
 }
 
-#clear-history {
-  flex: 0;
-}
+.btn-dashboard:hover::before { color: var(--void); }
+
+#clear-history { flex: 0 0 auto; }
+
+/* ---------- Empty state ---------- */
 
 .empty {
-  color: #76809a;
-  font-size: 0.95rem;
+  color: var(--bone-faint);
+  font-size: 11px;
+  margin: 0;
+  padding: 8px 0;
+  letter-spacing: 0.02em;
 }
+
+.empty::before {
+  content: '// ';
+  color: var(--steel);
+}
+
+/* Caret on empty messages — pure CSS blink */
+.empty::after {
+  content: ' _';
+  color: var(--lime);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ---------- Selection ---------- */
+
+::selection {
+  background: var(--lime);
+  color: var(--void);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb {
+  background: var(--steel);
+  border: 2px solid var(--void);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--lime-dim); }

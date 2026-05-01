@@ -190,8 +190,8 @@ function displayApplications(applications, targetList = applicationsListSubmitte
         ${urlSection}
       </div>
       <div class="card-actions">
-        <button class="btn-copy" data-url="${escapeHtml(app.url || '')}" title="Copy URL">📋</button>
-        <button class="btn-delete" data-index="${index}" title="Delete">🗑️</button>
+        <button class="btn-copy" data-url="${escapeHtml(app.url || '')}" title="Copy URL">Copy</button>
+        <button class="btn-delete" data-index="${index}" title="Delete">Delete</button>
       </div>
     `;
 
@@ -205,7 +205,7 @@ function displayApplications(applications, targetList = applicationsListSubmitte
       if (url) {
         navigator.clipboard.writeText(url).then(() => {
           const originalText = e.target.textContent;
-          e.target.textContent = '✓';
+          e.target.textContent = 'Copied';
           setTimeout(() => {
             e.target.textContent = originalText;
           }, 2000);
@@ -642,7 +642,7 @@ function displayExtractedApplications(applications) {
     item.className = 'extracted-app-item';
     item.innerHTML = `
       <div class="extracted-header">
-        <h4>📧 ${escapeHtml(app.file || 'email')}</h4>
+        <h4>${escapeHtml(app.file || 'email')}</h4>
         <button class="btn-small btn-remove" data-index="${index}">Remove</button>
       </div>
       <div class="extracted-form">
@@ -662,7 +662,7 @@ function displayExtractedApplications(applications) {
           <label>Date:</label>
           <span>${escapeHtml(new Date(app.timestamp).toLocaleString())}</span>
         </div>
-        ${app.error ? `<div class="form-group error-msg">⚠️ ${escapeHtml(app.error)}</div>` : ''}
+        ${app.error ? `<div class="form-group error-msg">${escapeHtml(app.error)}</div>` : ''}
       </div>
     `;
     extractedList.appendChild(item);

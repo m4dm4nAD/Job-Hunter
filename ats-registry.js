@@ -133,8 +133,12 @@ const JHT_ATS_PROVIDERS = [
   },
   {
     name: 'LinkedIn Jobs',
-    urlPatterns: [/linkedin\.com\/jobs\/(view|search|collections|application)/i],
-    selectors: ['.jobs-search__job-details', '.jobs-details', '.jobs-unified-top-card'],
+    // ONLY dedicated job pages — `/jobs/search/`, `/jobs/collections/`,
+    // `/jobs/application/` are browsing views and should not auto-mark.
+    // Apply-button text patterns ("Easy Apply") still capture clicks even
+    // on browsing pages where this provider does not match.
+    urlPatterns: [/linkedin\.com\/jobs\/view\/\d+/i],
+    selectors: [],
     applyButtonSelectors: [
       'button.jobs-apply-button',
       'button[aria-label*="Easy Apply" i]',
