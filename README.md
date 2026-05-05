@@ -2,15 +2,6 @@
 
 A local-first browser extension that detects when you are working on a job application and records when you submit it. All data is stored in browser storage and never leaves your machine.
 
-## Features
-- ✅ **Automatic Detection** - Scans pages for job application forms
-- ✅ **Application Tracking** - Records when you submit applications
-- ✅ **Email Import** - Upload .eml files to recover missed applications
-- ✅ **Local Storage** - All data stays on your device
-- ✅ **Comprehensive Dashboard** - View all applications with filtering and search
-- ✅ **Export to CSV** - Download your application history
-- ✅ **Statistics** - Track applications by timeframe
-- ✅ **Zero Internet** - Completely private, no cloud sync
 
 ## Installation
 1. Open your browser's extension page.
@@ -26,7 +17,7 @@ A local-first browser extension that detects when you are working on a job appli
 1. Click the extension icon to open the popup
 2. See current page application status
 3. View recent applications
-4. Click **📊 View Dashboard** to access the full dashboard
+4. Click ** View Dashboard** to access the full dashboard
 
 ### Using the Dashboard
 1. Open `dashboard.html` as a standalone page
@@ -70,23 +61,7 @@ The parser will automatically extract:
 4. Both the **popup** and **dashboard** read from this storage to display your history
 5. No data ever leaves your device
 
-## Testing
 
-1. After installing the extension, open `test-page.html` in your browser
-2. Open the browser developer console (F12) to see debug messages
-3. Click the "Submit Application" button or "Apply Now" button
-4. Check the extension popup to see if the application was recorded
-5. Open the dashboard and try the **📧 Import from Email** feature
-6. Try importing `sample-email.eml` or `sample-email-2.eml` to test the parser
 
-The parser should automatically extract:
-- TechCorp / Senior Software Engineer (from first sample)
-- DesignLab / Product Designer (from second sample)
 
-## Privacy & Security
-- ✅ Uses `chrome.storage.local` only
-- ✅ No network requests made
-- ✅ No external servers
-- ✅ Data stays entirely on your device
-- ✅ No tracking or telemetry
 
