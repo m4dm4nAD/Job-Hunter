@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Job Hunter Tracker",
   "description": "Detects job application activity and stores application events locally in the browser.",
-  "version": "1.1.0",
-  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "version": "1.1.1",
+  "permissions": ["storage", "activeTab", "tabs"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
